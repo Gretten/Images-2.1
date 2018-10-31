@@ -10,40 +10,23 @@ const path = {
     default: 'app/build/'
 };
 
+const extencions = {
+    img: /\.(png|jpg|jpeg|svg|gif)+/,
+    main: /\.(html|ico)/,
+    js: '.js',
+    css: '.css'
+}
+
 const rebuild = () => {
     return src(path.dev)
         .pipe(flatten())
         .pipe(dest((file) => {
-            return file.extname === '.js' ? `${path.js}` :
-                file.extname === '.css' ? `${path.css}` :
-                file.extname === '.+(png|jpg|jpeg|gif)' ? `${path.img}` :
-                file.extname === '.+(html|ico)' ? `${path.default}` :
-                `${path.other}`;
+            return file.extname === extencions.js ? path.js :
+                file.extname === extencions.css ? path.css :
+                file.extname.match(extencions.img) ? path.img :
+                file.extname.match(extencions.main) ? path.default :
+                path.other;
         }));
 };
 
-const debug = () => {
-    return src(path.dev)
-        .on('data', (file) => {
-            console.log({
-                path: file.path,
-                cwd: file.cwd,
-                base: file.base,
-                // another
-                relative: file.relative,
-                dirname: file.dirname,
-                basename: file.basename,
-                stem: file.stem,
-                extname: file.extname,
-                extname: file.extname
-            })
-            if (file.extname === '+(.png|.jpg)') {
-                console.log('its an image')
-            }
-        })
-};
-
 exports.default = rebuild;
-exports.debug = debug;
-
-//

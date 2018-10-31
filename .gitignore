@@ -1,3 +1,5 @@
 node_modules
 app/build/**
+!app/**/git.txt
+!build/**/git.txt
 app/dev/**
