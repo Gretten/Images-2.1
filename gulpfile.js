@@ -12,7 +12,7 @@ const path = {
 
 const extencions = {
     img: /\.(png|jpg|jpeg|svg|gif)+/,
-    main: /\.(html|ico)/,
+    main: /\.(html|ico)+/,
     js: '.js',
     css: '.css'
 }
