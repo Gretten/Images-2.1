@@ -4,14 +4,15 @@ const path = {
     css: 'app/build/css',
     img: 'app/build/img',
     other: 'app/build/other',
-    default: 'app/build/'
-};
+    default: 'app/build/',
+    index: 'app/build/index.html',
+}
 
 const extencions = {
     img: /\.(png|jpg|jpeg|svg|gif)+/,
     main: /\.(html|ico)+/,
     js: '.js',
-    css: '.css'
+    css: '.css',
 }
 
 module.exports = { path, extencions }

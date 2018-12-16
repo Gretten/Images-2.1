@@ -5,6 +5,7 @@ const entities                = require('gulp-html-entities');
 const strip                   = require('gulp-strip-comments');
 const argv                    = require('yargs').argv;
 const gulpif                  = require('gulp-if');
+const fs                      = require('fs');
 
 const handler                 = require('./functions');
 const { path, extencions }    = require('./options');
@@ -22,7 +23,7 @@ const rebuild = () => {
 };
 
 const comments = () => {
-    return src('app/build/index.html')
+    return src(path.index)
       .pipe(strip({safe: true}))
       .pipe(cheerio(function($) {
         $('meta').each(function() {
@@ -34,11 +35,11 @@ const comments = () => {
             }
         })}))
       .pipe(entities('decode'))
-      .pipe(dest('app/build'))
+      .pipe(dest(path.default))
 }
 
 const links = () => {
-    return src(['app/build/index.html'])
+    return src([path.index])
         .pipe(gulpif(argv.preland, cheerio(function($){
             $('a').each(function(){
                 this.attribs.href = "";
@@ -59,7 +60,7 @@ const links = () => {
             });
         }))
         .pipe(entities('decode'))
-        .pipe(dest('app/build'));
+        .pipe(dest(path.default));
 }
 
 exports.default = rebuild;
