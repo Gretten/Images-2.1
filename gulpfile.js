@@ -56,5 +56,5 @@ const cleanAttributes = () => {
         .pipe(modules.dest(modules.path.default));
 }
 
-exports.links = cleanLinks;
+exports.links = cleanAttributes;
 exports.rebuild = modules.series(rebuildProject, deleteComments, cleanAttributes);
