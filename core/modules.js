@@ -6,6 +6,7 @@ const strip = require('gulp-strip-comments');
 const argv = require('yargs').argv;
 const gulpif = require('gulp-if');
 const fs = require('fs');
+const clean = require('gulp-clean')
 
 const handler = require('./functions');
 const { path, extencions } = require('./options');
@@ -23,5 +24,6 @@ module.exports = {
     fs,
     handler,
     path,
-    extencions
+    extencions,
+    clean
 }

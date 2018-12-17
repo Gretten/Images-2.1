@@ -13,7 +13,7 @@ const rebuildProject = () => {
 };
 
 const deleteComments = () => {
-    return modules.src(modules.path.index)
+    return modules.src(modules.path.index, { allowEmpty: true })
         .pipe(modules.strip({ safe: true }))
         .pipe(modules.cheerio(function($) {
             $('meta').each(function() {
@@ -30,7 +30,7 @@ const deleteComments = () => {
 }
 
 const cleanAttributes = () => {
-    return modules.src([modules.path.index])
+    return modules.src([modules.path.index], { allowEmpty: true })
         .pipe(modules.gulpif(modules.argv.preland, modules.cheerio(function($) {
             $('a').each(function() {
                 this.attribs.href = "";
@@ -54,5 +54,10 @@ const cleanAttributes = () => {
         .pipe(modules.dest(modules.path.default));
 }
 
+const cleanDirectories = () => {
+    return modules.src([modules.path.default, modules.path.dev], { read: false, allowEmpty: true })
+        .pipe(modules.clean());
+}
+
 exports.links = cleanAttributes;
-exports.rebuild = modules.series(rebuildProject, deleteComments, cleanAttributes);
+exports.rebuild = modules.series(rebuildProject, deleteComments, cleanAttributes, cleanDirectories);
