@@ -1,4 +1,4 @@
-const modules = require('./modules');
+const modules = require('./core/modules');
 
 const rebuildProject = () => {
     return modules.src(modules.path.dev)
@@ -48,8 +48,6 @@ const cleanAttributes = () => {
             });
             $('form').each(function() {
                 this.attribs.action = "";
-                console.log(this);
-                console.log($);
             });
         }))
         .pipe(modules.entities('decode'))
