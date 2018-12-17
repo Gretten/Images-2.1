@@ -1,68 +1,60 @@
-const { src, dest, series }   = require('gulp');
-const flatten                 = require("gulp-flatten");
-const cheerio                 = require('gulp-cheerio');
-const entities                = require('gulp-html-entities');
-const strip                   = require('gulp-strip-comments');
-const argv                    = require('yargs').argv;
-const gulpif                  = require('gulp-if');
-const fs                      = require('fs');
+const modules = require('./modules');
 
-const handler                 = require('./functions');
-const { path, extencions }    = require('./options');
-
-const rebuild = () => {
-    return src(path.dev)
-        .pipe(flatten())
-        .pipe(dest((file) => {
-            return file.extname === extencions.js ? path.js :
-                file.extname === extencions.css ? path.css :
-                file.extname.match(extencions.img) ? path.img :
-                file.extname.match(extencions.main) ? path.default :
-                path.other;
+const rebuildProject = () => {
+    return modules.src(modules.path.dev)
+        .pipe(modules.flatten())
+        .pipe(modules.dest((file) => {
+            return file.extname === modules.extencions.js ? modules.path.js :
+                file.extname === modules.extencions.css ? modules.path.css :
+                file.extname.match(modules.extencions.img) ? modules.path.img :
+                file.extname.match(modules.extencions.main) ? modules.path.default :
+                modules.path.other;
         }));
 };
 
-const comments = () => {
-    return src(path.index)
-      .pipe(strip({safe: true}))
-      .pipe(cheerio(function($) {
-        $('meta').each(function() {
-            if(this.parent.name === 'html' && 
-               this.parent.children[1].name === 'meta') {
-               this.parent.children[1] = ''
-            } else if(!this.parent.children[1].name === 'meta') {
-                console.log('Ошибка в инструкции "comments"');
-            }
-        })}))
-      .pipe(entities('decode'))
-      .pipe(dest(path.default))
+const deleteComments = () => {
+    return modules.src(modules.path.index)
+        .pipe(modules.strip({ safe: true }))
+        .pipe(modules.cheerio(function($) {
+            $('meta').each(function() {
+                if (this.parent.name === 'html' &&
+                    this.parent.children[1].name === 'meta') {
+                    this.parent.children[1] = ''
+                } else if (!this.parent.children[1].name === 'meta') {
+                    console.log('Ошибка в инструкции "comments"');
+                }
+            })
+        }))
+        .pipe(modules.entities('decode'))
+        .pipe(modules.dest(modules.path.default))
 }
 
-const links = () => {
-    return src([path.index])
-        .pipe(gulpif(argv.preland, cheerio(function($){
-            $('a').each(function(){
+const cleanAttributes = () => {
+    return modules.src([modules.path.index])
+        .pipe(modules.gulpif(modules.argv.preland, modules.cheerio(function($) {
+            $('a').each(function() {
                 this.attribs.href = "";
             })
         })))
-        .pipe(cheerio(function($) {
+        .pipe(modules.cheerio(function($) {
             $('img').each(function() {
-                handler.call(this);
+                modules.handler.call(this);
             });
             $('script').each(function() {
-                handler.call(this);
+                modules.handler.call(this);
             });
             $('link').each(function() {
-                handler.call(this);
+                modules.handler.call(this);
             });
             $('form').each(function() {
                 this.attribs.action = "";
+                console.log(this);
+                console.log($);
             });
         }))
-        .pipe(entities('decode'))
-        .pipe(dest(path.default));
+        .pipe(modules.entities('decode'))
+        .pipe(modules.dest(modules.path.default));
 }
 
-exports.default = rebuild;
-exports.links = links;
-exports.rebuild = series(rebuild, comments, links);
+exports.links = cleanLinks;
+exports.rebuild = modules.series(rebuildProject, deleteComments, cleanAttributes);
