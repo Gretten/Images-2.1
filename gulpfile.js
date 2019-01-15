@@ -30,12 +30,12 @@ const deleteComments = () => {
 }
 
 const cleanAttributes = () => {
-    return modules.src([modules.path.index], { allowEmpty: true })
-        .pipe(modules.gulpif(modules.argv.preland, modules.cheerio(function($) {
-            $('a').each(function() {
-                this.attribs.href = "";
-            })
-        })))
+    return modules.src([modules.path.dev], { allowEmpty: true })
+        // .pipe(modules.gulpif(modules.argv.preland, modules.cheerio(function($) {
+        //     $('a').each(function() {
+        //         this.attribs.href = "";
+        //     })
+        // })))
         .pipe(modules.cheerio(function($) {
             $('img').each(function() {
                 modules.handler.call(this);
@@ -48,6 +48,19 @@ const cleanAttributes = () => {
             });
             $('form').each(function() {
                 this.attribs.action = "";
+                this.children.forEach(item => {
+                    if(item.attribs) {
+                        if(item.attribs.type === 'tel') {
+                            item.attribs.name = 'phone';
+                        } else if(item.attribs.type === 'text') {
+                            item.attribs.name = 'name';
+                        } 
+                    }
+                })
+            });
+            $('select').each(function() {
+                this.children = '';
+                this.attribs.name = 'country';
             });
         }))
         .pipe(modules.entities('decode'))
