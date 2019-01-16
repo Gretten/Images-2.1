@@ -30,38 +30,53 @@ const deleteComments = () => {
 }
 
 const cleanAttributes = () => {
+    const reg = /[^\/]*(\.jpg|\.jpeg|\.png|\.gif|\.svg|\.css|\.js)/gi;
     return modules.src([modules.path.dev], { allowEmpty: true })
-        // .pipe(modules.gulpif(modules.argv.preland, modules.cheerio(function($) {
-        //     $('a').each(function() {
-        //         this.attribs.href = "";
-        //     })
-        // })))
+        .pipe(modules.gulpif(modules.argv.preland, modules.cheerio(function($) {
+            $(this).attr('href', '');
+        })))
         .pipe(modules.cheerio(function($) {
-            $('img').each(function() {
-                modules.handler.call(this);
-            });
-            $('script').each(function() {
-                modules.handler.call(this);
-            });
-            $('link').each(function() {
-                modules.handler.call(this);
-            });
             $('form').each(function() {
-                this.attribs.action = "";
-                this.children.forEach(item => {
-                    if(item.attribs) {
-                        if(item.attribs.type === 'tel') {
-                            item.attribs.name = 'phone';
-                        } else if(item.attribs.type === 'text') {
-                            item.attribs.name = 'name';
-                        } 
-                    }
-                })
-            });
+                $(this).attr('action', '');
+            })
             $('select').each(function() {
-                this.children = '';
-                this.attribs.name = 'country';
-            });
+                $(this).attr('name', 'country');
+                $(this).html('');
+            })
+            $('input', 'form').each(function() {
+                switch($(this).attr('type')) {
+                    case 'tel':
+                        $(this).attr('name', 'phone');
+                        break;
+                    case 'text':
+                        $(this).attr('name', 'name');
+                        break;
+                    case 'hidden':
+                    case 'checkbox':
+                        $(this).remove();
+                        break;
+                    
+                }
+            })
+            $('script').each(function() {
+                if($(this).attr('src')) {
+                    $(this).attr('src', `js/${$(this).attr('src').match(reg)}`)
+                }
+            })
+            $('link').each(function() {
+                if($(this).attr('rel') === 'stylesheet') {
+                    $(this).attr('href', `css/${$(this).attr('href').match(reg)}`)
+                } else if($(this).attr('rel') === 'icon') {
+                    $(this).remove();
+                }
+            })
+            $('img').each(function() {
+                if($(this).attr('src')) {
+                    $(this).attr('src', `img/${$(this).attr('src').match(reg)}`)
+                }
+            })
+            $('head').prepend('<base href="<?php echo $base_url;?>">');
+            $('body').append('<?php include ($root_path."app2/counters.php");>\n<?php include ($root_path."app2/scriptsLanding.php");>\n');
         }))
         .pipe(modules.entities('decode'))
         .pipe(modules.dest(modules.path.default));
