@@ -29,9 +29,10 @@ const deleteComments = () => {
         .pipe(modules.dest(modules.path.default))
 }
 
+// For test purposes src directory path was changed!
 const cleanAttributes = () => {
     const reg = /[^\/]*(\.jpg|\.jpeg|\.png|\.gif|\.svg|\.css|\.js)/gi;
-    return modules.src([modules.path.dev], { allowEmpty: true })
+    return modules.src([modules.path.index], { allowEmpty: true })
         .pipe(modules.gulpif(modules.argv.preland, modules.cheerio(function($) {
             $(this).attr('href', '');
         })))
@@ -43,7 +44,7 @@ const cleanAttributes = () => {
                 $(this).attr('name', 'country');
                 $(this).html('');
             })
-            $('input', 'form').each(function() {
+            $('input' || 'button', 'form').each(function() {
                 switch($(this).attr('type')) {
                     case 'tel':
                         $(this).attr('name', 'phone');
@@ -55,8 +56,10 @@ const cleanAttributes = () => {
                     case 'checkbox':
                         $(this).remove();
                         break;
-                    
-                }
+                    case 'submit':
+                        $(this).attr('onclick') ? $(this).removeAttr('onclick') : false;
+                        break;
+                }  
             })
             $('script').each(function() {
                 if($(this).attr('src')) {
@@ -75,17 +78,31 @@ const cleanAttributes = () => {
                     $(this).attr('src', `img/${$(this).attr('src').match(reg)}`)
                 }
             })
-            $('head').prepend('<base href="<?php echo $base_url;?>">');
-            $('body').append('<?php include ($root_path."app2/counters.php");>\n<?php include ($root_path."app2/scriptsLanding.php");>\n');
         }))
         .pipe(modules.entities('decode'))
         .pipe(modules.dest(modules.path.default));
 }
 
-const cleanDirectories = () => {
-    return modules.src([modules.path.default, modules.path.dev], { read: false, allowEmpty: true })
-        .pipe(modules.clean());
+// const cleanDirectories = () => {
+//     return modules.src([modules.path.default, modules.path.dev], { read: false, allowEmpty: true })
+//         .pipe(modules.clean());
+// }
+
+const apiInject = () => {
+    // PHP codes injection.
+    return modules.src(modules.path.index, { allowEmpty: true })
+        .pipe(modules.cheerio(function($) {
+            $('head').prepend('\n<base href="<?php echo $base_url;?>">\n');
+        }))
+        .pipe(modules.gulpif(modules.argv.preland, modules.cheerio(function($) {
+            $('body').append("<?php require_once $root_path.'app2/planding/bottom_script.php';?>\n");
+        })))
+        .pipe(modules.gulpif(modules.argv.land, modules.cheerio(function($) {
+            $('body').append('<?php include ($root_path."app2/counters.php");>\n<?php include ($root_path."app2/scriptsLanding.php");>\n');
+        })))
+        .pipe(modules.entities('decode'))
+        .pipe(modules.dest(modules.path.default))
 }
 
 exports.links = cleanAttributes;
-exports.rebuild = modules.series(rebuildProject, deleteComments, cleanAttributes, cleanDirectories);
+exports.rebuild = modules.series(rebuildProject, deleteComments, cleanAttributes, apiInject);

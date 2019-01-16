@@ -9,7 +9,7 @@ const fs = require('fs');
 const clean = require('gulp-clean')
 
 const handler = require('./functions');
-const { path, extencions } = require('./options');
+const { path, extencions } = require('./paths');
 
 module.exports = {
     src,
